@@ -16,9 +16,9 @@ const argv = yargs(process.argv)
 
 const main = () => {
   // t('') - t("") - t(``) - t('', [])
-  lang_translate_func_pattern = /t\(["'`]([^"'`]*)["'`]?.+\)/g
-  // p('','',0) - p("","",0) - p(``,``,0)
-  lang_plural_func_pattern = /p\(["'`]([^"'`]*)["'`], +["'`]([^"'`]*)["'`]?.+\)/g
+  lang_translate_func_pattern = /[^a-zA-Z]t\(["'`]([^"'`]*)["'`](?=.*\))/g
+  // p('','',0) - p("","",0) - p(``,``,0) - p("", '',0)
+  lang_plural_func_pattern = /[^a-zA-Z]p\(["'`]([^"'`]*)["'`], {0,}["'`]([^"'`]*)["'`](?=.*\))/g
 
   let dictionary = {}
 

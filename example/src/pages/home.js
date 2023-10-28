@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { css } from 'goober'
 import { useLang } from 'g45-react/hooks/useLang'
@@ -15,6 +15,12 @@ css`.what {
 
 function Home() {
   const { t, p } = useLang()
+
+  useEffect(() => {
+    const test = import('react') // this should not be parsed by lang
+    console.log(test)
+    t('asdf');t('nythrty'); // this should be picked
+  }, [])
 
   const [count, setCount] = useState(0)
   return <div>
