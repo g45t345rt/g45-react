@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import prettyMs from 'pretty-ms'
 
-import { useServerData } from '../context/useServerData'
+import { useServerData } from '../hooks/useServerData'
 
 function Age(props) {
   const { ssrId, timestamp, ms = 1000, format = { compact: true }, update = false } = props
