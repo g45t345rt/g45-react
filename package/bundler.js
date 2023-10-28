@@ -148,13 +148,16 @@ const resolveRoutesPathPlugin = () => {
 const createLangImportCode = () => {
   let code = ``
   let export_dict = ``
-  const files = dir.files(argv.lang, { sync: true })
-  files.forEach(file => {
-    const key = path.basename(file, '.json')
-    const file_path = file.split('\\').join('/')
-    code += `import ${key} from './${file_path}'\n`
-    export_dict += `${key}, `
-  })
+
+  if (fs.existsSync(argv.lang)) {
+    const files = dir.files(argv.lang, { sync: true })
+    files.forEach(file => {
+      const key = path.basename(file, '.json')
+      const file_path = file.split('\\').join('/')
+      code += `import ${key} from './${file_path}'\n`
+      export_dict += `${key}, `
+    })
+  }
 
   code += `\nexport default { ${export_dict.trim()} }`
   return code
@@ -167,10 +170,10 @@ const resolveDictionariesPlugin = () => {
       build.onResolve({ filter: /DICTIONARIES/ }, args => {
         return { path: args.path, namespace: 'dict-lang' }
       }),
-      build.onLoad({ filter: /DICTIONARIES/, namespace: 'dict-lang' }, args => {
-        const code = createLangImportCode()
-        return { contents: code, resolveDir: process.cwd() }
-      })
+        build.onLoad({ filter: /DICTIONARIES/, namespace: 'dict-lang' }, args => {
+          const code = createLangImportCode()
+          return { contents: code, resolveDir: process.cwd() }
+        })
     },
   }
 }

@@ -1,12 +1,15 @@
 {
   "name": "g45-react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
-  "main": "bundler.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/g45t345rt/g45-react/tree/master/package"
+  },
+  "author": "g45t345rt",
   "license": "ISC",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.4.2",

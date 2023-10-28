@@ -22,6 +22,11 @@ const main = () => {
 
   let dictionary = {}
 
+  const outdir = path.dirname(argv.outfile)
+  if (!fs.existsSync(outdir)) {
+    fs.mkdirSync(outdir, { recursive: true })
+  }
+
   dir.readFiles(argv.src, (err, content, next) => {
     if (err) throw err
 
@@ -44,11 +49,6 @@ const main = () => {
     if (err) throw err
 
     if (fs.existsSync(argv.outfile)) {
-      const dir = path.dirname(argv.outfile)
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true })
-      }
-
       const dictionary_string = fs.readFileSync(argv.outfile)
       const current_dictionary = JSON.parse(dictionary_string)
 
