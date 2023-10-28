@@ -1,0 +1,23 @@
+{
+  "name": "example",
+  "private": true,
+  "scripts": {
+    "build-index": "node ./node_modules/g45-react/bundler.js --type index --entry ./src/routes.js",
+    "watch-index": "npm run build-index -- --sourcemap --watch",
+    "start-index": "live-server ./dist/index",
+    "build-node": "node ./node_modules/g45-react/bundler.js --type node_server --entry ./src/routes.js",
+    "watch-node": "npm run build-node -- --sourcemap --watch",
+    "start-node": "node ./dist/node_server/server.js",
+    "build-cf": "node ./node_modules/g45-react/bundler.js --type cf_worker --entry ./src/routes.js",
+    "watch-cf": "npm run build-cf --  --sourcemap --watch",
+    "start-cf": "npx wrangler pages dev ./dist/cf --port=3000 --live-reload",
+    "make-lang": "node ./node_modules/g45-react/lang-dict.js --src ./src --outfile ./lang/en.json"
+  },
+  "dependencies": {
+    "g45-react": "file:../package",
+    "goober": "^2.1.13",
+    "react": "file:../package/node_modules/react",
+    "react-helmet-async": "file:../package/node_modules/react-helmet-async",
+    "react-router-dom": "file:../package/node_modules/react-router-dom"
+  }
+}

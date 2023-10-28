@@ -1,0 +1,8 @@
+{
+  "Hello this is the first translation.": "Bonjour, c'est la première traduction.",
+  "Here is another translation test.": "Voici un autre test de traduction.",
+  "More translation, testing translate function.": "Plus de traduction, test de la fonction de traduction.",
+  "This is a bracket test. 1 = {} and 2 = {}": "Ceci est un test de parenthèse. 1 = {} et 2 = {}",
+  "{} item": "{} élément",
+  "{} items": "{} éléments"
+}
