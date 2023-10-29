@@ -13,6 +13,8 @@ function App(props) {
       <meta charset="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="icon" href="/public/favicon.ico" />
+      <link rel="preload" href="/public/client.css" as="style" />
+      <link rel="preload" href="/public/client.js" as="script" />
       <link rel="stylesheet" href="/public/client.css" />
     </Helmet>
     <ServerProvider context={serverContext}>

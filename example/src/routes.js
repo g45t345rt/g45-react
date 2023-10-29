@@ -12,7 +12,7 @@ const css = extractCss()
 const routes = [{
   element: <div>
     <Helmet>
-      <style id="_goober">{css}</style>
+      <style>{css}</style> {/* Don't use id="_goober" or css will flicker. Probably an issue with goober reseting css.*/}
     </Helmet>
     <Layout />
   </div>,
