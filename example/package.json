@@ -4,7 +4,6 @@
   "scripts": {
     "build-index": "node ./node_modules/g45-react/bundler.js --type index --entry ./src/routes.js",
     "watch-index": "npm run build-index -- --sourcemap --watch",
-    "start-index": "live-server ./dist/index",
     "build-node": "node ./node_modules/g45-react/bundler.js --type node_server --entry ./src/routes.js",
     "watch-node": "npm run build-node -- --sourcemap --watch",
     "start-node": "node ./dist/node_server/server.js",

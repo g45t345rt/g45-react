@@ -36,8 +36,8 @@ function Home() {
     <div>{p(`{} item`, `{} items`, count)}</div>
     <button onClick={() => setCount(count === 0 ? 1 : 0)}>toggle count</button>
     <div>{test}</div>
-    <img src="/public/image.png" width={250} />
-    <object data="/public/image.svg" width="300" height="300"> </object>
+    <img src="public/image.png" width={250} />
+    <object data="public/image.svg" width="300" height="300"> </object>
   </div>
 }
 

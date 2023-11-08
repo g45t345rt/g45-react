@@ -48,7 +48,7 @@ const template = ({ html, helmetContext, serverDataContext }) => {
     <body ${helmet.bodyAttributes.toString()}>
       <div id="app">${html}</div>
       ${serverDataScript(data)}
-      <script src="/public/client.js" defer></script>
+      <script src="public/client.js" defer></script>
     </body>
 
     </html>
