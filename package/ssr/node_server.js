@@ -1,6 +1,5 @@
 import path from 'path'
 import express from 'express'
-import url from 'node:url'
 
 import ssr from './ssr'
 
@@ -9,11 +8,12 @@ const app = express()
 app.use(`/public`, express.static(path.join(__dirname, 'public')))
 
 app.use(`*`, async (req, res) => {
-  const parsedUrl = url.parse(req.baseUrl)
+  const url = new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`)
   const serverContext = { req, statusCode: 200 }
   const html = await ssr({
-    path: parsedUrl.pathname || '/',
+    path: url.pathname || '/',
     serverContext,
+    base: `${url.origin}/`
   })
 
   res.writeHead(serverContext.statusCode, { 'Content-Type': 'text/html;charset=UTF-8' })

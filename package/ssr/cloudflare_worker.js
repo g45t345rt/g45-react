@@ -11,7 +11,8 @@ export default {
     const serverContext = { req, statusCode: 200 }
     const html = await ssr({
       path: url.pathname || '/',
-      serverContext
+      serverContext,
+      base: `${url.origin}/`
     })
 
     const init = {
