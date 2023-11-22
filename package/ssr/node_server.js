@@ -9,7 +9,7 @@ app.use(`/public`, express.static(path.join(__dirname, 'public')))
 
 app.use(`*`, async (req, res) => {
   const url = new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`)
-  const serverContext = { req, statusCode: 200 }
+  const serverContext = { req, statusCode: 200, url }
   const html = await ssr({
     path: url.pathname || '/',
     serverContext,

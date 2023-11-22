@@ -8,7 +8,7 @@ export default {
       return env.ASSETS.fetch(req)
     }
 
-    const serverContext = { req, statusCode: 200 }
+    const serverContext = { req, statusCode: 200, url }
     const html = await ssr({
       path: url.pathname || '/',
       serverContext,

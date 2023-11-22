@@ -9,6 +9,7 @@ function Layout() {
     <div>
       <Link to="/">Home</Link>
       <Link to="/page1">Page 1</Link>
+      <Link to="/qs?test=true&value=1">Page QueryString</Link>
     </div>
     <LangSwitch />
     <Outlet />
