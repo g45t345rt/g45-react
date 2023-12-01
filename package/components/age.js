@@ -4,14 +4,14 @@ import prettyMs from 'pretty-ms'
 import { useServerData } from '../hooks/useServerData'
 
 function Age(props) {
-  const { ssrId, timestamp, ms = 1000, format = { compact: true }, update = false } = props
+  const { ssrKey, timestamp, ms = 1000, format = { compact: true }, update = false } = props
 
   // this is important to use server timestamp and avoid timestamp mismatch with hydration
-  const serverAge = useServerData(`component:age:${ssrId || ``}`, () => {
+  const ageTimestamp = useServerData(`component:age:${ssrKey ? ssrKey : timestamp}`, () => {
     return new Date().getTime() - (timestamp || 0)
-  }, 0, [timestamp])
+  }, 0)
 
-  const [age, setAge] = useState(serverAge)
+  const [age, setAge] = useState(ageTimestamp)
 
   useEffect(() => {
     let timeoutId = null

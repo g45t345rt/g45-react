@@ -1,14 +1,12 @@
-import hashIt from 'hash-it'
 import React, { createContext } from 'react'
 import { renderToString } from 'react-dom/server'
 
 const Context = createContext({ funcs: {}, data: {} })
 
-export const useServerData = (key, func, initialData, dependencies) => {
+export const useServerData = (key, func, initialData) => {
   const context = React.useContext(Context)
-  const nKey = `${key}_${hashIt(dependencies)}` // important hash dependencies to re-add same func if dependencies changed
-  if (!context.funcs[nKey]) context.funcs[nKey] = func
-  return context.data[nKey] || initialData
+  if (!context.funcs[key]) context.funcs[key] = func
+  return context.data[key] || initialData
 }
 
 const WINDOW_DATA_KEY = `serverData`
