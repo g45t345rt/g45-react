@@ -6,14 +6,18 @@ import useServer from './useServer'
 export default function useQueryString(initialValue) {
   const server = useServer()
   const [storedValue, setStoredValue] = useState(() => {
-    let query = null
+    let query = {}
     if (server) {
       query = queryString.parse(server.url.search)
     } else {
       query = queryString.parse(window.location.search)
     }
 
-    return query || initialValue
+    if (Object.keys(query).length === 0) {
+      return initialValue
+    }
+    
+    return query
   })
 
   const setValue = useCallback((value, replace = true) => {

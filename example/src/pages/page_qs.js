@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async'
 import useQueryString from 'g45-react/hooks/useQueryString'
 
 function PageQueryString() {
-  const [query, setQuery] = useQueryString()
+  const [query, setQuery] = useQueryString({ init: true })
 
   return <div>
     <Helmet>
