@@ -6,6 +6,7 @@ const autoprefixer = require('autoprefixer')
 const path = require('path')
 const { copy } = require('esbuild-plugin-copy')
 const dir = require('node-dir')
+const { spawn } = require('child_process')
 
 const defaultConfigPath = `./bundler-config.json`
 const defaultDefinePath = `./bundler-define.json`
@@ -47,6 +48,10 @@ const argv = yargs(process.argv)
     type: `string`,
     default: defaultDefinePath
   })
+  .option(`dev`, {
+    type: `boolean`,
+    default: false
+  })
   .parse()
 
 const sourcemap = argv.sourcemap ? `inline` : false
@@ -65,13 +70,59 @@ const defaultConfig = {
   external: []
 }
 
-const logRebuildPlugin = (name) => {
+let devServer = {
+  process: null,
+  command: null,
+  args: [],
+  useShell: false // true to execute cloudflare npx live reload and avoid kill
+}
+
+const runDevServer = () => {
+  const { command, args, useShell } = devServer
+
+  if (!command) return
+  if (devServer.process) {
+    if (useShell) return
+    devServer.process.kill() // kill does not work with shell
+  }
+
+  devServer.process = spawn(command, args, { shell: useShell })
+
+  devServer.process.stdout.on(`data`, (data) => {
+    console.log(`${data}`)
+  })
+
+  devServer.process.stderr.on(`data`, (data) => {
+    console.error(`${data}`)
+  })
+
+  devServer.process.on(`close`, (code) => {
+    if (code !== null) {
+      console.log(`Dev server exited with code ${code}`)
+    }
+
+    devServer.process = null
+  })
+
+  console.log(`Dev server started with PID: ${devServer.process.pid}`)
+}
+
+const rebuildPlugin = ({ isServer = false } = {}) => {
+  const name = isServer ? `Build server` : `Build client`
+
   return {
-    name: 'log-rebuild',
+    name: 'rebuild-plugin',
     setup(build) {
-      build.onEnd(() => {
-        console.log(`Rebuild ${name} - ${new Date().toLocaleString()}`)
-      })
+      build.onStart(() => {
+        console.time(name)
+      }),
+        build.onEnd(() => {
+          console.timeEnd(name)
+
+          if (isServer) {
+            runDevServer()
+          }
+        })
     }
   }
 }
@@ -212,7 +263,7 @@ const buildCloudflare = async () => {
 
   // _worker
   const entryServer = path.join(__dirname, './ssr/cloudflare_worker.js')
-  build({
+  await build({
     ...options,
     format: 'esm',
     entryPoints: [entryServer],
@@ -226,13 +277,13 @@ const buildCloudflare = async () => {
           plugins: [autoprefixer()]
         }
       }),
-      logRebuildPlugin('cf-worker')
+      rebuildPlugin({ isServer: true })
     ]
   })
 
   // client
   const entryClient = path.join(__dirname, './ssr/client.js')
-  build({
+  await build({
     ...options,
     outdir: `./dist/cf/public`,
     entryPoints: [entryClient],
@@ -244,13 +295,13 @@ const buildCloudflare = async () => {
           plugins: [autoprefixer()]
         }
       }),
-      logRebuildPlugin('cf-client'),
+      rebuildPlugin(),
       copyPublicPlugin(`./dist/cf/public`)
     ]
   })
 }
 
-const buildNodeServer = () => {
+const buildNodeServer = async () => {
   const options = {
     bundle: true,
     jsx: `automatic`,
@@ -262,7 +313,7 @@ const buildNodeServer = () => {
 
   // node_server
   const entryServer = path.join(__dirname, './ssr/node_server.js')
-  build({
+  await build({
     ...options,
     platform: 'node',
     outfile: `./dist/node_server/server.js`,
@@ -276,13 +327,13 @@ const buildNodeServer = () => {
           plugins: [autoprefixer()]
         }
       }),
-      logRebuildPlugin('node-server')
+      rebuildPlugin({ isServer: true })
     ]
   })
 
   // client
   const entryClient = path.join(__dirname, './ssr/client.js')
-  build({
+  await build({
     ...options,
     outdir: `./dist/node_server/public`,
     entryPoints: [entryClient],
@@ -294,14 +345,14 @@ const buildNodeServer = () => {
           plugins: [autoprefixer()]
         }
       }),
-      logRebuildPlugin('node-client'),
+      rebuildPlugin(),
       copyPublicPlugin(`./dist/node_server/public`)
     ]
   })
 }
 
 // No ssr
-const buildIndex = () => {
+const buildIndex = async () => {
   const entry = path.join(__dirname, './app/client.js')
 
   const options = {
@@ -313,7 +364,8 @@ const buildIndex = () => {
     ...config
   }
 
-  build({
+  // client only
+  await build({
     ...options,
     outdir: `./dist/index/public`,
     entryPoints: [entry],
@@ -325,7 +377,7 @@ const buildIndex = () => {
           plugins: [autoprefixer()]
         }
       }),
-      logRebuildPlugin('index'),
+      rebuildPlugin(),
       copyPublicPlugin('./dist/index/public'),
     ]
   })
@@ -338,9 +390,20 @@ const main = async () => {
       buildIndex()
       break
     case `cf_worker`:
+      if (argv.dev) {
+        devServer.command = `npx wrangler pages dev`
+        devServer.args = [`./dist/cf --port=3000 --live-reload --compatibility-date=2024-06-05`]
+        devServer.useShell = true
+      }
+
       buildCloudflare()
       break
     case `node_server`:
+      if (argv.dev) {
+        devServer.command = `node`
+        devServer.args = [`./dist/node_server/server.js`]
+      }
+
       buildNodeServer()
       break
     default:

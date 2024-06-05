@@ -5,11 +5,9 @@
     "build-index": "node ./node_modules/g45-react/bundler.js --type index --entry ./src/routes.js",
     "watch-index": "npm run build-index -- --sourcemap --watch",
     "build-node": "node ./node_modules/g45-react/bundler.js --type node_server --entry ./src/routes.js",
-    "watch-node": "npm run build-node -- --sourcemap --watch",
-    "start-node": "node ./dist/node_server/server.js",
+    "dev-node": "node ./node_modules/g45-react/bundler.js --type node_server --dev --sourcemap --watch --entry ./src/routes.js",
     "build-cf": "node ./node_modules/g45-react/bundler.js --type cf_worker --entry ./src/routes.js",
-    "watch-cf": "npm run build-cf --  --sourcemap --watch",
-    "start-cf": "npx wrangler pages dev ./dist/cf --port=3000 --live-reload",
+    "dev-cf": "node ./node_modules/g45-react/bundler.js --type cf_worker --dev --sourcemap --watch --entry ./src/routes.js",
     "make-lang": "node ./node_modules/g45-react/lang-dict.js --src ./src --outfile ./lang/en.json"
   },
   "dependencies": {
