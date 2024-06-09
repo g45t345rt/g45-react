@@ -15,6 +15,7 @@
     "goober": "^2.1.13",
     "react": "file:../package/node_modules/react",
     "react-helmet-async": "file:../package/node_modules/react-helmet-async",
-    "react-router-dom": "file:../package/node_modules/react-router-dom"
+    "react-router-dom": "file:../package/node_modules/react-router-dom",
+    "wrangler": "^3.60.0"
   }
 }

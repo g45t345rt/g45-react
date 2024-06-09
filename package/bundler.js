@@ -84,6 +84,7 @@ const runDevServer = () => {
   if (devServer.process) {
     if (useShell) return
     devServer.process.kill() // kill does not work with shell
+    devServer.process = null
   }
 
   devServer.process = spawn(command, args, { shell: useShell })
@@ -97,11 +98,7 @@ const runDevServer = () => {
   })
 
   devServer.process.on(`close`, (code) => {
-    if (code !== null) {
-      console.log(`Dev server exited with code ${code}`)
-    }
-
-    devServer.process = null
+    console.log(`Dev server exited with code ${code}`)
   })
 
   console.log(`Dev server started with PID: ${devServer.process.pid}`)
@@ -392,7 +389,7 @@ const main = async () => {
     case `cf_worker`:
       if (argv.dev) {
         devServer.command = `npx wrangler pages dev`
-        devServer.args = [`./dist/cf --port=3000 --live-reload --compatibility-date=2024-06-05`]
+        devServer.args = [`./dist/cf --port=3000 --live-reload`]
         devServer.useShell = true
       }
 
