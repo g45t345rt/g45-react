@@ -40,7 +40,7 @@ function Home() {
     <button onClick={() => setCount(count === 0 ? 1 : 0)}>toggle count</button>
     <div>{test}</div>
     <img src={image_png} width={250} />
-    <img src="/public/image.png" width={250} />
+    <img src="public/image.png" width={250} />
     <object data={image_svg} width="300" height="300"> </object>
   </div>
 }

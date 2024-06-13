@@ -227,6 +227,29 @@ const resolveDictionariesPlugin = () => {
   }
 }
 
+// special case to replace public/ in css file
+// this is for index build because root path is not relative to folder
+const writeBuild = () => {
+  return {
+    name: 'fix-public-path',
+    setup(build) {
+      build.onEnd(async (result) => {
+        for (const outputFile of result.outputFiles) {
+          let { path, text, contents } = outputFile
+
+          if (path.endsWith('.css')) {
+            text = text.replace(/public\//g, '')
+            fs.writeFileSync(path, text)
+            return
+          }
+
+          fs.writeFileSync(path, contents)
+        }
+      })
+    },
+  }
+}
+
 const build = async (options) => {
   if (argv.watch) {
     const ctx = await esbuild.context(options)
@@ -256,13 +279,13 @@ const buildCloudflare = async () => {
     minify: argv.minify,
     sourcemap,
     define,
-    publicPath: 'public',
+    publicPath: '/public',
     ...config
   }
 
   // _worker
   const entryServer = path.join(__dirname, './ssr/cloudflare_worker.js')
-  const result = await build({
+  await build({
     ...options,
     format: 'esm',
     entryPoints: [entryServer],
@@ -307,7 +330,7 @@ const buildNodeServer = async () => {
     minify: argv.minify,
     sourcemap,
     define,
-    publicPath: 'public',
+    publicPath: '/public',
     ...config
   }
 
@@ -370,6 +393,7 @@ const buildIndex = async () => {
     ...options,
     outdir: `./dist/index/public`,
     entryPoints: [entry],
+    write: false,
     plugins: [
       resolveRoutesPathPlugin(),
       resolveDictionariesPlugin(),
@@ -380,8 +404,10 @@ const buildIndex = async () => {
       }),
       rebuildPlugin(),
       copyPublicPlugin('./dist/index/public'),
+      writeBuild()
     ]
   })
+
   copyIndexHtml()
 }
 
