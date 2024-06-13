@@ -3,6 +3,9 @@ import { Helmet } from 'react-helmet-async'
 import { css } from 'goober'
 import { useLang } from 'g45-react/hooks/useLang'
 
+import image_png from '../../assets/image.png'
+import image_svg from '../../assets/image.svg'
+
 const test = DEFINE_TEST
 
 const style = css`
@@ -19,7 +22,7 @@ function Home() {
   useEffect(() => {
     const test = import('react') // this should not be parsed by lang
     console.log(test)
-    t('asdf');t('nythrty'); // this should be picked
+    t('asdf'); t('nythrty'); // this should be picked
   }, [])
 
   const [count, setCount] = useState(0)
@@ -36,8 +39,9 @@ function Home() {
     <div>{p(`{} item`, `{} items`, count)}</div>
     <button onClick={() => setCount(count === 0 ? 1 : 0)}>toggle count</button>
     <div>{test}</div>
-    <img src="public/image.png" width={250} />
-    <object data="public/image.svg" width="300" height="300"> </object>
+    <img src={image_png} width={250} />
+    <img src="/public/image.png" width={250} />
+    <object data={image_svg} width="300" height="300"> </object>
   </div>
 }
 

@@ -65,7 +65,8 @@ const defaultConfig = {
     '.ttf': 'file',
     '.eot': 'file',
     '.png': 'file',
-    '.jpg': 'file'
+    '.jpg': 'file',
+    '.ico': 'file'
   },
   external: []
 }
@@ -255,12 +256,13 @@ const buildCloudflare = async () => {
     minify: argv.minify,
     sourcemap,
     define,
+    publicPath: 'public',
     ...config
   }
 
   // _worker
   const entryServer = path.join(__dirname, './ssr/cloudflare_worker.js')
-  await build({
+  const result = await build({
     ...options,
     format: 'esm',
     entryPoints: [entryServer],
@@ -305,6 +307,7 @@ const buildNodeServer = async () => {
     minify: argv.minify,
     sourcemap,
     define,
+    publicPath: 'public',
     ...config
   }
 
@@ -358,6 +361,7 @@ const buildIndex = async () => {
     minify: argv.minify,
     sourcemap,
     define,
+    publicPath: 'public',
     ...config
   }
 

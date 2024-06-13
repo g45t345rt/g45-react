@@ -2,9 +2,13 @@ import { Helmet } from 'react-helmet-async'
 import { Link, Outlet } from 'react-router-dom'
 import { useLang } from 'g45-react/hooks/useLang'
 
+import faviconUrl from '../assets/favicon.ico'
+
 function Layout() {
   return <div>
-    <Helmet titleTemplate="%s - Example" />
+    <Helmet titleTemplate="%s - Example">
+      <link rel="icon" href={faviconUrl} />
+    </Helmet>
     <div>Layout</div>
     <div>
       <Link to="/">Home</Link>

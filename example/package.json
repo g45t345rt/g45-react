@@ -8,7 +8,8 @@
     "dev-node": "node ./node_modules/g45-react/bundler.js --type node_server --dev --sourcemap --watch --entry ./src/routes.js",
     "build-cf": "node ./node_modules/g45-react/bundler.js --type cf_worker --entry ./src/routes.js",
     "dev-cf": "node ./node_modules/g45-react/bundler.js --type cf_worker --dev --sourcemap --watch --entry ./src/routes.js",
-    "make-lang": "node ./node_modules/g45-react/lang-dict.js --src ./src --outfile ./lang/en.json"
+    "make-lang": "node ./node_modules/g45-react/lang-dict.js --src ./src --outfile ./lang/en.json",
+    "start": "npm run dev-cf"
   },
   "dependencies": {
     "g45-react": "file:../package",
