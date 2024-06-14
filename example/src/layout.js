@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async'
 import { Link, Outlet } from 'react-router-dom'
 import { useLang } from 'g45-react/hooks/useLang'
+import { PreloadFonts } from 'g45-react/components/fontawesome_icon'
 
 import faviconUrl from '../assets/favicon.ico'
 
@@ -9,6 +10,7 @@ function Layout() {
     <Helmet titleTemplate="%s - Example">
       <link rel="icon" href={faviconUrl} />
     </Helmet>
+    <PreloadFonts />
     <div>Layout</div>
     <div>
       <Link to="/">Home</Link>
