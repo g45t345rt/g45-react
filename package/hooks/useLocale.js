@@ -3,18 +3,29 @@ import parser from 'accept-language-parser'
 import useServer from './useServer'
 import getHeader from "../utils/get_header"
 
+function getBrowserUserLanguage() {
+  const userLanguages = navigator.languages || [navigator.language || navigator.userLanguage]
+  return userLanguages[0]
+}
+
 export default function useLocale() {
   const server = useServer()
 
-  let locale = undefined // undefined for using the default user browser system locale
   if (server) {
     const { req } = server
     const acceptLanguage = getHeader(req.headers, `accept-language`)
     const languages = parser.parse(acceptLanguage)
     if (languages.length > 0) {
-      locale = languages[0].code // use the first locale
+      const language = languages[0]
+      if (language.region) {
+        return `${language.code}-${language.region}`
+      }
+
+      return language.code
     }
+
+    return undefined
   }
 
-  return locale
+  return getBrowserUserLanguage()
 }
