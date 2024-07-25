@@ -3,24 +3,15 @@ import ClientCookie from 'js-cookie'
 import HeaderCookie from 'cookie'
 
 import useServer from './useServer'
+import getHeader from '../utils/get_header'
 
 export default function useCookie(key, initialValue) {
   const server = useServer()
 
   const [storedValue, setStoredValue] = useState(() => {
     if (server) {
-      let cookieHeader = ''
-      const headers = server.req.headers
-      if (headers) {
-        if (typeof headers.get === `function`) {
-          // cf worker https://developers.cloudflare.com/workers/examples/extract-cookie-value
-          cookieHeader = headers.get('Cookie') || ''
-        } else {
-          // node
-          cookieHeader = headers['cookie'] || ''
-        }
-      }
-
+      const { req } = server
+      const cookieHeader = getHeader(req.headers, `cookie`)
       const cookies = HeaderCookie.parse(cookieHeader || '')
       const data = cookies[key]
       if (data === undefined) return initialValue
