@@ -3,9 +3,11 @@ import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import Icon from 'g45-react/components/fontawesome_icon'
 import Age from 'g45-react/components/age'
-import { LocaleNumberFormat, UTCLocaleDateFormat } from 'g45-react/components/locale_format'
+import useLocale from 'g45-react/hooks/useLocale'
 
 function Page1() {
+  const locale = useLocale()
+
   return <div>
     <Helmet>
       <title>Page 1</title>
@@ -21,8 +23,9 @@ function Page1() {
     </div>
     <div>
       Locales
-      <div>UTC Date: <UTCLocaleDateFormat date={new Date()} options={{ weekday: "short", year: "numeric", month: "long", day: "numeric", hour: "numeric" }} /></div>
-      <div>Number: <LocaleNumberFormat number={23452345} /></div>
+      <div>UTC Date: {new Date().toLocaleString(locale, { timeZone: `UTC` })}</div>
+      <div>Number: {(23452345).toLocaleString(locale)}</div>
+      {/* Browser does not provide timezone. Do not use SSR with local time to avoid SSR hydration error. Use useEffect() or <Suspense>. */}
       <div>Local Date: <Suspense>{new Date().toLocaleString()}</Suspense></div>
     </div>
   </div>
