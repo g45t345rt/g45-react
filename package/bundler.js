@@ -55,6 +55,8 @@ const argv = yargs(process.argv)
   .parse()
 
 const sourcemap = argv.sourcemap ? `inline` : false
+const cf_server_outfile = `./dist/cf/_worker.js`
+const node_server_outfile = `./dist/node_server/server.js`
 
 const defaultConfig = {
   loader: {
@@ -66,7 +68,10 @@ const defaultConfig = {
     '.eot': 'file',
     '.png': 'file',
     '.jpg': 'file',
-    '.ico': 'file'
+    '.ico': 'file',
+    '.webp': 'file',
+    '.mp3': 'file',
+    '.mp4': 'file'
   },
   external: []
 }
@@ -105,20 +110,55 @@ const runDevServer = () => {
   console.log(`Dev server started with PID: ${devServer.process.pid}`)
 }
 
-const rebuildPlugin = ({ isServer = false } = {}) => {
+const postBuildPlugin = ({ isServer = false, server_outfile } = {}) => {
   const name = isServer ? `Build server` : `Build client`
 
   return {
-    name: 'rebuild-plugin',
+    name: 'post-build-plugin',
     setup(build) {
       build.onStart(() => {
         console.time(name)
       }),
-        build.onEnd(() => {
+        build.onEnd((result) => {
           console.timeEnd(name)
 
           if (isServer) {
             runDevServer()
+          } else if (!argv.watch && server_outfile) {
+            // for production build
+            // content hash is now appended to client.js and client.css (to mitigate cache issues)
+            // we need to replace public/client.js and public/client.css with the correct path (including hash)
+            // we avoid using this feature with --watch because the file can be written when the dev server is restarting
+
+            const outs = result.metafile.outputs
+            let client_out = null
+            let client_outfile = null
+            Object.keys(outs).forEach((key) => {
+              const out = outs[key]
+              if (out.entryPoint && out.entryPoint.endsWith(`client.js`)) {
+                client_out = out
+                client_outfile = key
+              }
+            })
+
+            if (!client_out) {
+              return
+            }
+
+            const js_path = path.basename(client_outfile)
+            const css_path = path.basename(client_out.cssBundle)
+            console.log('Main outfile replaced:', js_path, css_path)
+
+            // replace the values in server code and public client code
+            let data = fs.readFileSync(server_outfile, { encoding: `utf-8` })
+            data = data.replaceAll(`"public/client.js"`, `"public/${js_path}"`)
+            data = data.replaceAll(`"public/client.css"`, `"public/${css_path}"`)
+            fs.writeFileSync(server_outfile, data, { encoding: `utf-8` })
+
+            data = fs.readFileSync(client_outfile, { encoding: `utf-8` })
+            data = data.replaceAll(`"public/client.js"`, `"public/${js_path}"`)
+            data = data.replaceAll(`"public/client.css"`, `"public/${css_path}"`)
+            fs.writeFileSync(client_outfile, data, { encoding: `utf-8` })
           }
         })
     }
@@ -176,7 +216,7 @@ const loadDefine = () => {
     })
   }
 
-  console.log(define)
+  console.log('Define variables:', define)
   return define
 }
 
@@ -229,9 +269,9 @@ const resolveDictionariesPlugin = () => {
 
 // special case to replace public/ in css file
 // this is for index build because root path is not relative to folder
-const writeBuild = () => {
+const fixPublicPathPlugin = () => {
   return {
-    name: 'fix-public-path',
+    name: 'fix-public-path-plugin',
     setup(build) {
       build.onEnd(async (result) => {
         for (const outputFile of result.outputFiles) {
@@ -250,15 +290,32 @@ const writeBuild = () => {
   }
 }
 
+// for server build and use with config { write: false }
+// write source only and avoid writting duplicate files from public client build
+const writeSourceOnlyPlugin = () => {
+  return {
+    name: 'write-source-only-plugin',
+    setup(build) {
+      build.onEnd((result) => {
+        for (const outfile of result.outputFiles) {
+          const ext = path.extname(outfile.path)
+          if (ext === '.js') {
+            const basedir = path.dirname(outfile.path)
+            fs.mkdirSync(basedir, { recursive: true })
+            fs.writeFileSync(outfile.path, outfile.contents)
+          }
+        }
+      })
+    }
+  }
+}
+
 const build = async (options) => {
   if (argv.watch) {
     const ctx = await esbuild.context(options)
     await ctx.watch()
   } else {
-    const result = await esbuild.build({
-      ...options,
-      metafile: argv.metafile
-    })
+    const result = await esbuild.build(options)
 
     if (argv.metafile) {
       // save bundle to analyze here https://esbuild.github.io/analyze/
@@ -280,6 +337,7 @@ const buildCloudflare = async () => {
     sourcemap,
     define,
     publicPath: '/public',
+    metafile: true,
     ...config
   }
 
@@ -287,9 +345,10 @@ const buildCloudflare = async () => {
   const entryServer = path.join(__dirname, './ssr/cloudflare_worker.js')
   await build({
     ...options,
+    write: false, // don't write all files and only the js source for the server
     format: 'esm',
     entryPoints: [entryServer],
-    outfile: `./dist/cf/_worker.js`,
+    outfile: cf_server_outfile,
     plugins: [
       resolveRoutesPathPlugin(),
       resolveDictionariesPlugin(),
@@ -299,7 +358,8 @@ const buildCloudflare = async () => {
           plugins: [autoprefixer()]
         }
       }),
-      rebuildPlugin({ isServer: true })
+      writeSourceOnlyPlugin(),
+      postBuildPlugin({ isServer: true })
     ]
   })
 
@@ -309,6 +369,7 @@ const buildCloudflare = async () => {
     ...options,
     outdir: `./dist/cf/public`,
     entryPoints: [entryClient],
+    entryNames: argv.watch ? '' : '[dir]/[name]-[hash]',
     plugins: [
       resolveRoutesPathPlugin(),
       resolveDictionariesPlugin(),
@@ -317,7 +378,7 @@ const buildCloudflare = async () => {
           plugins: [autoprefixer()]
         }
       }),
-      rebuildPlugin(),
+      postBuildPlugin({ server_outfile: cf_server_outfile }),
       copyPublicPlugin(`./dist/cf/public`)
     ]
   })
@@ -331,6 +392,7 @@ const buildNodeServer = async () => {
     sourcemap,
     define,
     publicPath: '/public',
+    metafile: true,
     ...config
   }
 
@@ -338,8 +400,9 @@ const buildNodeServer = async () => {
   const entryServer = path.join(__dirname, './ssr/node_server.js')
   await build({
     ...options,
+    write: false,
     platform: 'node',
-    outfile: `./dist/node_server/server.js`,
+    outfile: node_server_outfile,
     entryPoints: [entryServer],
     plugins: [
       resolveRoutesPathPlugin(),
@@ -350,7 +413,8 @@ const buildNodeServer = async () => {
           plugins: [autoprefixer()]
         }
       }),
-      rebuildPlugin({ isServer: true })
+      writeSourceOnlyPlugin(),
+      postBuildPlugin({ isServer: true }),
     ]
   })
 
@@ -360,6 +424,7 @@ const buildNodeServer = async () => {
     ...options,
     outdir: `./dist/node_server/public`,
     entryPoints: [entryClient],
+    entryNames: argv.watch ? '' : '[dir]/[name]-[hash]',
     plugins: [
       resolveRoutesPathPlugin(),
       resolveDictionariesPlugin(),
@@ -368,7 +433,7 @@ const buildNodeServer = async () => {
           plugins: [autoprefixer()]
         }
       }),
-      rebuildPlugin(),
+      postBuildPlugin({ server_outfile: node_server_outfile }),
       copyPublicPlugin(`./dist/node_server/public`)
     ]
   })
@@ -385,6 +450,7 @@ const buildIndex = async () => {
     sourcemap,
     define,
     publicPath: 'public',
+    metafile: true,
     ...config
   }
 
@@ -402,9 +468,9 @@ const buildIndex = async () => {
           plugins: [autoprefixer()]
         }
       }),
-      rebuildPlugin(),
+      postBuildPlugin(),
       copyPublicPlugin('./dist/index/public'),
-      writeBuild()
+      fixPublicPathPlugin()
     ]
   })
 
