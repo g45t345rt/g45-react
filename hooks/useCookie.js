@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react'
 import ClientCookie from 'js-cookie'
 import * as HeaderCookie from 'cookie'
-console.log(HeaderCookie)
 import useServer from './useServer'
 import getHeader from '../utils/get_header'
 
