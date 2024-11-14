@@ -1,5 +1,5 @@
 {
-  "name": "example",
+  "name": "test-project",
   "private": true,
   "scripts": {
     "build-index": "node ./node_modules/g45-react/bundler.js --type index --entry ./src/routes.js",
@@ -13,11 +13,11 @@
     "start": "npm run dev-cf"
   },
   "dependencies": {
-    "g45-react": "file:../package",
+    "g45-react": "file:../",
     "goober": "^2.1.13",
-    "react": "file:../package/node_modules/react",
-    "react-helmet-async": "file:../package/node_modules/react-helmet-async",
-    "react-router-dom": "file:../package/node_modules/react-router-dom",
-    "wrangler": "^3.60.3"
+    "react": "file:../node_modules/react",
+    "react-helmet-async": "file:../node_modules/react-helmet-async",
+    "react-router-dom": "file:../node_modules/react-router-dom",
+    "wrangler": "^3.86.1"
   }
 }

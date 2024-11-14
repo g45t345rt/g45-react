@@ -12,7 +12,7 @@ or
 
 Your app must return an array of react-router routes.  
 That's sit, the rest is handled for you.  
-Check the Demo project in `/example` folder.  
+Check the Demo project in `/test` folder.  
 
 ## Bundler
 

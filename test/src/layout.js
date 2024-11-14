@@ -7,7 +7,7 @@ import faviconUrl from '../assets/favicon.ico'
 
 function Layout() {
   return <div>
-    <Helmet titleTemplate="%s - Example">
+    <Helmet titleTemplate="%s - Test">
       <link rel="icon" href={faviconUrl} />
     </Helmet>
     <PreloadFonts />
